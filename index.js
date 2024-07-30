@@ -9,8 +9,8 @@ const port = process.env.PORT || 5000;
 app.use(express.json());
 app.use(cors());
 
-console.log('DB_User:', process.env.DB_User);
-console.log('Secret_Key:', process.env.Secret_Key);
+// console.log('DB_User:', process.env.DB_User);
+// console.log('Secret_Key:', process.env.Secret_Key);
 
 // Database connection URI
 const uri = `mongodb+srv://${process.env.DB_User}:${encodeURIComponent(process.env.Secret_Key)}@cluster0.ey6jdyf.mongodb.net/?retryWrites=true&w=majority`;
@@ -31,6 +31,21 @@ async function run() {
 
     const eventsCollection = client.db('evento').collection('events');
 
+    // Get all events
+    app.get('/events', async (req, res) => {
+        const cursor = eventsCollection.find();
+        const result = await cursor.toArray();
+        res.send(result);
+      });
+
+    // Get single event details
+      app.get('/events/:id', async (req, res) => {
+        const id = req.params.id;
+        const query = { event_id: id }; // Changed to use event_id
+        const result = await eventsCollection.findOne(query);
+        res.send(result);
+      });
+  
 
 
     // Send a ping to confirm a successful connection
