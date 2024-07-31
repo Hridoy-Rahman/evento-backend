@@ -2,6 +2,7 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const express = require('express');
 require('dotenv').config();
 const cors = require('cors');
+app.use(cors());
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -53,6 +54,26 @@ async function run() {
         const result = await eventsCollection.insertOne(added);
         res.send(result);
       });
+
+
+        // Get events created by a specific user
+    app.get('/events/user/:email', async (req, res) => {
+        const userEmail = req.params.email;
+        console.log(userEmail);
+        try {
+          const query = { user_email: userEmail };
+          const cursor = eventsCollection.find(query);
+          const result = await cursor.toArray();
+          res.send(result);
+        } catch (error) {
+          console.error('Error fetching user events:', error);
+          res.status(500).send({ message: 'Failed to fetch user events', error });
+        }
+      });
+
+
+      
+
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
