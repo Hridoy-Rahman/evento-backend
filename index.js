@@ -41,12 +41,18 @@ async function run() {
     // Get single event details
       app.get('/events/:id', async (req, res) => {
         const id = req.params.id;
-        const query = { event_id: id }; // Changed to use event_id
+        const query = { _id: new ObjectId(id) }
         const result = await eventsCollection.findOne(query);
         res.send(result);
       });
   
 
+    // Create an event
+    app.post('/events', async (req, res) => {
+        const added = req.body;
+        const result = await eventsCollection.insertOne(added);
+        res.send(result);
+      });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
