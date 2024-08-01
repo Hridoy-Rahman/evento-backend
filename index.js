@@ -2,8 +2,6 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const express = require('express');
 require('dotenv').config();
 const cors = require('cors');
-app.use(cors());
-
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -59,7 +57,7 @@ async function run() {
         // Get events created by a specific user
     app.get('/events/user/:email', async (req, res) => {
         const userEmail = req.params.email;
-        console.log(userEmail);
+        // console.log(userEmail);
         try {
           const query = { user_email: userEmail };
           const cursor = eventsCollection.find(query);
@@ -72,6 +70,23 @@ async function run() {
       });
 
 
+      app.delete('/events/:id', async (req, res) => {
+        const id = req.params.id;
+        console.log('Delete request received for ID:', id);
+        try {
+            const result = await eventsCollection.deleteOne({ _id: new ObjectId(id) });
+            console.log('Delete result:', result);
+            if (result.deletedCount === 0) {
+                return res.status(404).json({ message: 'Event not found' });
+            }
+            res.status(200).json({ message: 'Event deleted successfully' });
+        } catch (error) {
+            console.error('Error deleting event:', error);
+            res.status(500).json({ message: 'Failed to delete event', error });
+        }
+    });
+    
+    
       
 
 
