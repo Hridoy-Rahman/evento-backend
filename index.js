@@ -29,6 +29,7 @@ async function run() {
     await client.connect();
 
     const eventsCollection = client.db('evento').collection('events');
+    const registrationsCollection = client.db('evento').collection('registrations');
 
     // Get all events
     app.get('/events', async (req, res) => {
@@ -111,7 +112,48 @@ async function run() {
             res.status(500).json({ message: 'Failed to update event', error });
         }
     });
-    
+
+
+    // Register for an event
+// Register for an event
+app.post('/register', async (req, res) => {
+    const { name, email, contactNo, transactionMethod, transactionId, eventId } = req.body; // Ensure email is included in the request body
+
+    try {
+        // Check if the user has already registered for the event
+        console.log('Request body:', req.body);
+
+        const existingRegistration = await registrationsCollection.findOne({ email, eventId });
+
+        if (existingRegistration) {
+            return res.status(400).json({ message: 'You have already registered for this event.' });
+        }
+
+        // Create a new registration document
+        const newRegistration = {
+            name,
+            email, // Ensure email is correctly included here
+            contactNo,
+            transactionMethod,
+            transactionId,
+            eventId,
+            registrationDate: new Date(),
+        };
+
+        console.log(newRegistration); // Log to verify correct data
+        // Save to the database
+        const result = await registrationsCollection.insertOne(newRegistration);
+        res.status(201).json({ message: 'Registration successful', registrationId: result.insertedId });
+    } catch (error) {
+        console.error('Error registering:', error);
+        res.status(500).json({ message: 'Server error', error });
+    }
+});
+
+
+
+
+  
     
       
 
