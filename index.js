@@ -153,6 +153,22 @@ app.post('/register', async (req, res) => {
 
 
 
+// Get events registered by a specific user
+app.get('/register/user/:email', async (req, res) => {
+    const userEmail = req.params.email;
+  
+    try {
+      const registrations = await registrationsCollection.find({ email: userEmail }).toArray();
+      const eventIds = registrations.map(registration => registration.eventId);
+  
+      const registeredEvents = await eventsCollection.find({ _id: { $in: eventIds.map(id => new ObjectId(id)) } }).toArray();
+      
+      res.send(registeredEvents);
+    } catch (error) {
+      console.error('Error fetching registered events:', error);
+      res.status(500).send({ message: 'Failed to fetch registered events', error });
+    }
+  });
   
     
       
