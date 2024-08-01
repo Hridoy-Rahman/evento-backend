@@ -69,13 +69,13 @@ async function run() {
         }
       });
 
-
-      app.delete('/events/:id', async (req, res) => {
+      //Delete an event
+    app.delete('/events/:id', async (req, res) => {
         const id = req.params.id;
         console.log('Delete request received for ID:', id);
         try {
             const result = await eventsCollection.deleteOne({ _id: new ObjectId(id) });
-            console.log('Delete result:', result);
+            // console.log('Delete result:', result);
             if (result.deletedCount === 0) {
                 return res.status(404).json({ message: 'Event not found' });
             }
@@ -83,6 +83,32 @@ async function run() {
         } catch (error) {
             console.error('Error deleting event:', error);
             res.status(500).json({ message: 'Failed to delete event', error });
+        }
+    });
+
+
+    // update an event by ID
+    app.put('/events/:id', async (req, res) => {
+        const id = req.params.id;
+        const updatedEvent = req.body;
+
+        // console.log('Update request received for ID:', id);
+        // console.log('Updated event data:', updatedEvent);
+
+        try {
+            const result = await eventsCollection.updateOne(
+                { _id: new ObjectId(id) },
+                { $set: updatedEvent }
+            );
+
+            if (result.modifiedCount === 0) {
+                return res.status(404).json({ message: 'Event not found or no changes made' });
+            }
+
+            res.status(200).json({ message: 'Event updated successfully' });
+        } catch (error) {
+            console.error('Error updating event:', error);
+            res.status(500).json({ message: 'Failed to update event', error });
         }
     });
     
