@@ -114,41 +114,55 @@ async function run() {
     });
 
 
-    // Register for an event
 // Register for an event
 app.post('/register', async (req, res) => {
-    const { name, email, contactNo, transactionMethod, transactionId, eventId } = req.body; // Ensure email is included in the request body
+    const { name, email, contactNo, transactionMethod, transactionId, eventId } = req.body;
 
     try {
-        // Check if the user has already registered for the event
         console.log('Request body:', req.body);
 
+        // Check if the user has already registered for the event
         const existingRegistration = await registrationsCollection.findOne({ email, eventId });
 
         if (existingRegistration) {
             return res.status(400).json({ message: 'You have already registered for this event.' });
         }
 
-        // Create a new registration document
-        const newRegistration = {
-            name,
-            email, // Ensure email is correctly included here
-            contactNo,
-            transactionMethod,
-            transactionId,
-            eventId,
-            registrationDate: new Date(),
-        };
+        // Fetch the event to get available seats
+        const event = await eventsCollection.findOne({ _id: new ObjectId(eventId) });
 
-        console.log(newRegistration); // Log to verify correct data
-        // Save to the database
-        const result = await registrationsCollection.insertOne(newRegistration);
-        res.status(201).json({ message: 'Registration successful', registrationId: result.insertedId });
+        console.log('Fetched event:', event);
+
+        if (event && event.available_seats > 0) {
+            // Deduct one from the available seats
+            await eventsCollection.updateOne(
+                { _id: new ObjectId(eventId) },
+                { $inc: { available_seats: -1 } }
+            );
+
+            // Create a new registration document
+            const newRegistration = {
+                name,
+                email,
+                contactNo,
+                transactionMethod,
+                transactionId,
+                eventId,
+                registrationDate: new Date(),
+            };
+
+            // Save to the database
+            const result = await registrationsCollection.insertOne(newRegistration);
+            res.status(201).json({ message: 'Registration successful', registrationId: result.insertedId });
+        } else {
+            return res.status(400).json({ message: 'No available seats left for this event.' });
+        }
     } catch (error) {
         console.error('Error registering:', error);
         res.status(500).json({ message: 'Server error', error });
     }
 });
+
 
 
 
