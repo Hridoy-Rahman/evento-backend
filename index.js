@@ -3,13 +3,13 @@ const express = require("express");
 require("dotenv").config();
 const cors = require("cors");
 const app = express();
-const port = process.env.PORT || 5000;
+const port =  8000;
 
 app.use(express.json());
+
 app.use(cors());
 
-// console.log('DB_User:', process.env.DB_User);
-// console.log('Secret_Key:', process.env.Secret_Key);
+
 
 // Database connection URI
 const uri = `mongodb+srv://${process.env.DB_User}:${encodeURIComponent(
@@ -28,7 +28,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server (optional starting in v4.7)
-    await client.connect();
+     client.connect();
 
     const eventsCollection = client.db("evento").collection("events");
     const registrationsCollection = client
